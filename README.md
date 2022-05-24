@@ -1,5 +1,5 @@
 # GameJamEditor
-Simple javascript code editor for making simple Game Jam scale games.
+A javascript code editor for making simple Game Jam scale games.
 <p>
     <img src="screenShot.png" width="640" height="480" />
 </p>
