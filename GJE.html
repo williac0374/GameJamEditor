@@ -262,9 +262,16 @@ var c = codemirrorEditor.getValue()
 download(prompt("script name?") + ".js",c)
 }
 function test(){
-localStorage.setItem("GJE.code",codemirrorEditor.getValue())
-var myWindow = window.open("GJE_TEST.html", "_blank"); //, "width=1200,height=500");
-var c = '<!DOC'+'TYPE html>'+'<ht'+'ml>'+'<tit'+'le>TEST GAME</tit'+'le>'+'<bo'+'dy>'+'<scri'+'pt>'+codemirrorEditor.getValue() + '<' + '/scr'+'ipt>'+'</bo'+'dy>'+'</ht'+'ml>';
+var myWindow = window.open("", "test");
+myWindow.document.title = 'testing';
+var c = '<!DOC'+'TYPE html>'
+c = c + '<tit'+'le>GameJamEditor Test</tit'+'le>'
+c = c + "<meta name='apple-mobile-web-app-capable' content='yes' />"
+c = c + "<meta name='viewport' content='initial-scale=1.0, maximum-scale=1.0, user-scalable=0, width=device-width, height=device-height' />"
+c = c + "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />"
+c = c + '<bo'+'dy>'+'<scri'+'pt>';
+c = c +  GJE_init + GJE_update + GJE_draw + GJE_engine + '<' + '/scr'+'ipt>'+'</bo'+'dy>'+'</ht'+'ml>';
+myWindow.document.write(c);
 }
 
 function shipIt(){
