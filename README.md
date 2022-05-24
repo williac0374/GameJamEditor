@@ -8,4 +8,4 @@ I run this locally in Chromium Version 98.0.4695.0 (Developer Build) (32-bit) on
 
 Yours may be different.
 
-this was inpired by Bitmelo https://bitmelo.com/ , and more recently EVO game engine https://itch.io/jam/the-tool-jam/rate/1034973 since CodeMirror https://codemirror.net/ feels nicer to work with on my phone than Ace editor https://ace.c9.io/ .  But that could be me not knowing how to use Ace correctly.
+this was inpired by Bitmelo https://bitmelo.com/ , and more recently EVO game engine's editor https://itch.io/jam/the-tool-jam/rate/1034973 for introducing me to CodeMirror https://codemirror.net/.  It feels nicer to work with on my phone than Ace editor https://ace.c9.io/ .  But that could be me not knowing how to use Ace correctly.
