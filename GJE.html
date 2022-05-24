@@ -16,20 +16,21 @@
 <button onclick="test()" style="background-color: green; color: white;">TEST</button>
 <button onclick="save()"style="background-color: blue; color: white;">SAVE</button>
 <button onclick="shipIt()"style="background-color: red; color: yellow;">SHIP IT</button>
-<input type="text" id="search" name="google">
+<input type="text" id="search" onchange="gSearch()">
 <button onclick="gSearch()">SEARCH</button>
+<button onclick="wipeMem()">CLEAR</button>
 <br>
 <button onclick="codemirrorEditor.undo()">UNDO</button>
-<button id="E_Button" onclick="changeMode(0)" style="background-color: black; color: white; border-top-color: white; border-bottom-color: white; border-right-color: white; border-left-color: white;">MISC</button>
 <button id="I_Button" onclick="changeMode(1)" style="background-color: black; color: white; border-top-color: white; border-bottom-color: white; border-right-color: white; border-left-color: white;">INIT</button>
 <button id="U_Button" onclick="changeMode(2)" style="background-color: black; color: white; border-top-color: white; border-bottom-color: white; border-right-color: white; border-left-color: white;">UPDATE</button>
 <button id="D_Button" onclick="changeMode(3)" style="background-color: black; color: white; border-top-color: white; border-bottom-color: white; border-right-color: white; border-left-color: white;">DRAW</button>
+<button id="E_Button" onclick="changeMode(0)" style="background-color: black; color: white; border-top-color: white; border-bottom-color: white; border-right-color: white; border-left-color: white;">MISC</button>
 <button id="J_Button" onclick="changeMode(4)">JUNK_DRAWER</button>
 <button onclick="codemirrorEditor.redo()">REDO</button>
 
 
 <div id='m'>
-<input id="fread" type='file' style="display: none" accept='.js' onchange='openFile(event)'>
+<input id="fread" type='file' style="display: none" accept='.js , .html' onchange='openFile(event)'>
 <textarea id='codearea' >
 
 
@@ -37,11 +38,23 @@
 </textarea>
 </div>
 <script>
+	var kill=false;
+//document.getElementById("codearea").scrollTop = document.getElementById("codearea").scrollHeight 
+//window.onscroll = function () { window.scrollTo(0, 0); };
+window.onscroll = function () { window.scrollTo(0, 0); };
+var cursor;
+var tempLine=0;
+var tempCh=0;
 var GJE_engine='////GJE_engine////';
+var E_curL =0;var E_curC =0;
 var GJE_init='////GJE_init////';
+var I_curL =0;var I_curC =0;
 var GJE_update='////GJE_update////';
+var U_curL =0;var U_curC =0;
 var GJE_draw='////GJE_draw////';
+var D_curL =0;var D_curC =0;
 var GJE_JUNK_DRAWER='////GJE_JUNK_DRAWER////';
+var J_curL =0;var J_curC =0;
 var GJE_mode=0;//engine edit mode
 function LoadMem(){
 	if (localStorage.getItem("GJE_engine.code") != null) {GJE_engine=localStorage.getItem("GJE_engine.code");}
@@ -50,12 +63,26 @@ function LoadMem(){
 	if (localStorage.getItem("GJE_draw.code") != null) {GJE_draw=localStorage.getItem("GJE_draw.code");}
 	if (localStorage.getItem("GJE_JUNK_DRAWER.code") != null) {GJE_JUNK_DRAWER=localStorage.getItem("GJE_JUNK_DRAWER.code");}
 }
+function wipeMem(){
+	let isExecuted = confirm("Are you sure to wipe scripts?");
+	if(isExecuted){
+		GJE_engine="";
+		GJE_init="";
+		GJE_update="";
+		GJE_update="";
+		GJE_JUNK_DRAWER="";
+		codemirrorEditor.setValue("");
+		SaveMem();
+	}
+}
 function SaveMem(){
+	
 	localStorage.setItem("GJE_engine.code", GJE_engine);
 	localStorage.setItem("GJE_init.code", GJE_init);
 	localStorage.setItem("GJE_update.code", GJE_update);
 	localStorage.setItem("GJE_draw.code", GJE_draw);
 	localStorage.setItem("GJE_JUNK_DRAWER.code", GJE_JUNK_DRAWER);
+	
 }
 
 function gSearch(){
@@ -92,22 +119,58 @@ changeMode(GJE_mode)
 codemirrorEditor.clearHistory()
 
 function saveCode(){
-	if(GJE_mode==0){GJE_engine=codemirrorEditor.getValue()}
-	if(GJE_mode==1){GJE_init=codemirrorEditor.getValue()}
-	if(GJE_mode==2){GJE_update=codemirrorEditor.getValue()}
-	if(GJE_mode==3){GJE_draw=codemirrorEditor.getValue()}
-	if(GJE_mode==4){GJE_JUNK_DRAWER=codemirrorEditor.getValue()}
+
+	if(GJE_mode==0){
+		GJE_engine=codemirrorEditor.getValue();
+		cursor = codemirrorEditor.getCursor();
+		E_curL =cursor.line;
+		E_curC =cursor.ch;
+	}
+	if(GJE_mode==1){
+		GJE_init=codemirrorEditor.getValue();
+		cursor = codemirrorEditor.getCursor();
+		I_curL =cursor.line;
+		I_curC =cursor.ch;	
+	}
+	if(GJE_mode==2){
+		GJE_update=codemirrorEditor.getValue();
+		cursor = codemirrorEditor.getCursor();
+		U_curL =cursor.line;
+		U_curC =cursor.ch;	
+	}
+	if(GJE_mode==3){
+		GJE_draw=codemirrorEditor.getValue();
+		cursor = codemirrorEditor.getCursor();
+		D_curL =cursor.line;
+		D_curC =cursor.ch;	
+	}
+	if(GJE_mode==4){
+		GJE_JUNK_DRAWER=codemirrorEditor.getValue();
+		cursor = codemirrorEditor.getCursor();
+		J_curL =cursor.line;
+		J_curC =cursor.ch;	
+	}
     SaveMem();
 }
 
 function changeMode(mode){
+	tempLine=0;
+	tempCh=0;
+	/*
 	if(GJE_mode==0){GJE_engine=codemirrorEditor.getValue()}
 	if(GJE_mode==1){GJE_init=codemirrorEditor.getValue()}
 	if(GJE_mode==2){GJE_update=codemirrorEditor.getValue()}
 	if(GJE_mode==3){GJE_draw=codemirrorEditor.getValue()}
 	if(GJE_mode==4){GJE_JUNK_DRAWER=codemirrorEditor.getValue()}
     SaveMem();
+	*/
+	saveCode();
 	GJE_mode=mode;
+	if(GJE_mode==0){tempLine=E_curL;tempCh=E_curC}
+	if(GJE_mode==1){tempLine=I_curL;tempCh=I_curC}
+	if(GJE_mode==2){tempLine=U_curL;tempCh=U_curC}
+	if(GJE_mode==3){tempLine=D_curL;tempCh=D_curC}
+	if(GJE_mode==4){tempLine=J_curL;tempCh=J_curC}
 	showCode();
 	codemirrorEditor.getDoc().clearHistory(); // add this line
     codemirrorEditor.refresh();
@@ -152,6 +215,13 @@ function changeMode(mode){
 		tempD.style.background = 'black';
 		tempJ.style.background = 'purple';
 	}
+	setTimeout (() => {
+        codemirrorEditor.focus();
+        codemirrorEditor.setCursor({
+             line: tempLine,
+             ch: tempCh,
+        });
+    }, 0);
 }
 function download(filename, text) {
 if(filename=='null.js'){return}
@@ -193,27 +263,17 @@ download(prompt("script name?") + ".js",c)
 }
 function test(){
 localStorage.setItem("GJE.code",codemirrorEditor.getValue())
-//window.open(URL, '_blank');
 var myWindow = window.open("GJE_TEST.html", "_blank"); //, "width=1200,height=500");
-
-//var c = '<body><canvas width="1000" height="1000" id="main">' + '</canvas></body><style>canvas{background-color: white;width: 100%;  height: 100%;}body {margin: 0;padding: 0;}' + "<"+ '/style>';
-//c = c + '<scr'+'ipt src= "evo.js"></scr'+'ipt><scr'+'ipt>'
-//c = c + '<script>function startLoop(){update();window.requestAnimationFrame(startLoop)};var canvas=document.getElementById("main"),ctx=canvas.getContext("2d"),running=!0;const interval=setInterval(function(){1==running&&(ctx.clearRect(0,0,canvas.width,canvas.height),console.log("a"))},.1);class Camera{constructor(t,s){this.x=t,this.y=s}}class Text{constructor(t,s,i,e,c){this.x=t,this.y=s,this.col=c,this.txt=i,this.font=e}draw(){ctx.font=this.font,ctx.fillStyle=this.col,ctx.fillText(this.txt,this.x,this.y)}}class Circle{constructor(t,s,i,e){this.x=t,this.y=s,this.r=i,this.col=e}draw(){ctx.fillStyle=this.col,ctx.fill(),ctx.strokeStyle=this.col,ctx.beginPath(),ctx.arc(this.x,this.y,this.r,0,2*Math.PI),ctx.stroke()}}class Rectangle{constructor(t,s,i,e,c){this.rot=0,this.x=t,this.y=s,this.w=i,this.h=e,this.col=c}draw(){ctx.fillStyle=this.col,ctx.save(),ctx.translate(this.x,this.y),ctx.rotate(this.rot*Math.PI/180),ctx.fillRect(this.x,this.y,this.w,this.h),ctx.restore()}}class Line{constructor(t,s,i,e,c){this.x=t,this.y=s,this.x2=i,this.y2=e,this.col=c,this.rot=0}draw(){ctx.fillStyle=this.col,ctx.strokeStyle=this.col,ctx.save(),ctx.translate(this.x,this.y),ctx.rotate(this.rot*Math.PI/180),ctx.moveTo(this.x,this.y),ctx.lineTo(this.x2,this.y2),ctx.stroke(),ctx.restore()}}class Sprite{constructor(t,s,i,e,c){this.rot=0,this.timer,this.url=t,this.img,this.x=s,this.y=i,this.w=e,this.h=c}setup(){this.img=new Image,this.img.src=this.url,ctx.drawImage(this.img,this.x,this.y,this.w,this.h)}draw(){ctx.drawImage(this.img,this.x-camera.x,this.y-camera.y,this.w,this.h)}}var camera=new Camera(0,0),key="null";function kd(t){key=t.key}function ku(t){key="null"}document.onkeydown=kd,document.onkeyup=ku;var mouseX=0,mouseY=0,mouseDown=!1;function getCursorPosition(t,s){const i=t.getBoundingClientRect(),e=s.clientX-i.left,c=s.clientY-i.top;mouseX=e,mouseY=c}function colliding(t,s){var i=t,e=s;return i.x<e.x+e.w&&i.x+i.w>e.x&&i.y<e.y+e.h&&i.y+i.h>e.y}canvas.addEventListener("mousemove",function(t){getCursorPosition(canvas,t)}),canvas.addEventListener("mousedown",function(t){mouseDown=!0}),canvas.addEventListener("mouseup",function(t){mouseDown=!1});';
 var c = '<!DOC'+'TYPE html>'+'<ht'+'ml>'+'<tit'+'le>TEST GAME</tit'+'le>'+'<bo'+'dy>'+'<scri'+'pt>'+codemirrorEditor.getValue() + '<' + '/scr'+'ipt>'+'</bo'+'dy>'+'</ht'+'ml>';
-//myWindow.document.write(c);
 }
 
 function shipIt(){
-//var c = '<body><canvas width="1000" height="1000" id="main">' + '</canvas></body><style>canvas{background-color: white;width: 100%;  height: 100%;}body {margin: 0;padding: 0;}' + "<"+ '/style>';
-//c = c + '<scr'+'ipt src= "evo.js"></scr'+'ipt><scr'+'ipt>'
-//c = c + '<script>function startLoop(){update();window.requestAnimationFrame(startLoop)};var canvas=document.getElementById("main"),ctx=canvas.getContext("2d"),running=!0;const interval=setInterval(function(){1==running&&(ctx.clearRect(0,0,canvas.width,canvas.height),console.log("a"))},.1);class Camera{constructor(t,s){this.x=t,this.y=s}}class Text{constructor(t,s,i,e,c){this.x=t,this.y=s,this.col=c,this.txt=i,this.font=e}draw(){ctx.font=this.font,ctx.fillStyle=this.col,ctx.fillText(this.txt,this.x,this.y)}}class Circle{constructor(t,s,i,e){this.x=t,this.y=s,this.r=i,this.col=e}draw(){ctx.fillStyle=this.col,ctx.fill(),ctx.strokeStyle=this.col,ctx.beginPath(),ctx.arc(this.x,this.y,this.r,0,2*Math.PI),ctx.stroke()}}class Rectangle{constructor(t,s,i,e,c){this.rot=0,this.x=t,this.y=s,this.w=i,this.h=e,this.col=c}draw(){ctx.fillStyle=this.col,ctx.save(),ctx.translate(this.x,this.y),ctx.rotate(this.rot*Math.PI/180),ctx.fillRect(this.x,this.y,this.w,this.h),ctx.restore()}}class Line{constructor(t,s,i,e,c){this.x=t,this.y=s,this.x2=i,this.y2=e,this.col=c,this.rot=0}draw(){ctx.fillStyle=this.col,ctx.strokeStyle=this.col,ctx.save(),ctx.translate(this.x,this.y),ctx.rotate(this.rot*Math.PI/180),ctx.moveTo(this.x,this.y),ctx.lineTo(this.x2,this.y2),ctx.stroke(),ctx.restore()}}class Sprite{constructor(t,s,i,e,c){this.rot=0,this.timer,this.url=t,this.img,this.x=s,this.y=i,this.w=e,this.h=c}setup(){this.img=new Image,this.img.src=this.url,ctx.drawImage(this.img,this.x,this.y,this.w,this.h)}draw(){ctx.drawImage(this.img,this.x-camera.x,this.y-camera.y,this.w,this.h)}}var camera=new Camera(0,0),key="null";function kd(t){key=t.key}function ku(t){key="null"}document.onkeydown=kd,document.onkeyup=ku;var mouseX=0,mouseY=0,mouseDown=!1;function getCursorPosition(t,s){const i=t.getBoundingClientRect(),e=s.clientX-i.left,c=s.clientY-i.top;mouseX=e,mouseY=c}function colliding(t,s){var i=t,e=s;return i.x<e.x+e.w&&i.x+i.w>e.x&&i.y<e.y+e.h&&i.y+i.h>e.y}canvas.addEventListener("mousemove",function(t){getCursorPosition(canvas,t)}),canvas.addEventListener("mousedown",function(t){mouseDown=!0}),canvas.addEventListener("mouseup",function(t){mouseDown=!1});';
-//var c = '<!DOC'+'TYPE html>'+'<ht'+'ml>'+'<bo'+'dy>'+'<scri'+'pt>';
 var c = '<!DOC'+'TYPE html>'
 c = c + "<meta name='apple-mobile-web-app-capable' content='yes' />"
 c = c + "<meta name='viewport' content='initial-scale=1.0, maximum-scale=1.0, user-scalable=0, width=device-width, height=device-height' />"
 c = c + "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />"
 c = c + '<bo'+'dy>'+'<scri'+'pt>';
-c = c + GJE_engine + GJE_init + GJE_update + GJE_draw + '<' + '/scr'+'ipt>'+'</bo'+'dy>'+'</ht'+'ml>';
+c = c +  GJE_init + GJE_update + GJE_draw + GJE_engine + '<' + '/scr'+'ipt>'+'</bo'+'dy>'+'</ht'+'ml>';
 download(prompt("game name?") + ".html",c)
 }
 </script>
